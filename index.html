@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фишинг-тренажер: распознавание опасных сообщений</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+        
+        .description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .game-area {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        
+        .message-card {
+            background-color: #f8f9fa;
+            border-left: 5px solid #6a11cb;
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        .message-content {
+            background-color: white;
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+            white-space: pre-line;
+            line-height: 1.5;
+        }
+        
+        .options {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .call-options {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-safe {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-phishing {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-hangup {
+            background-color: #dc3545;
+            color: white;
+        }
+        
+        .btn-continue {
+            background-color: #28a745;
+            color: white;
+        }
+        
+        .btn-next {
+            background-color: #007bff;
+            color: white;
+            display: none;
+            margin-top: 20px;
+        }
+        
+        button:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+        
+        .result {
+            display: none;
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 5px;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .correct {
+            background-color: #d4edda;
+            border-left: 5px solid #28a745;
+            color: #155724;
+        }
+        
+        .incorrect {
+            background-color: #f8d7da;
+            border-left: 5px solid #dc3545;
+            color: #721c24;
+        }
+        
+        .consequences {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #fff3cd;
+            border-radius: 5px;
+            border-left: 5px solid #ffc107;
+        }
+        
+        .tips {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #d1ecf1;
+            border-radius: 5px;
+            border-left: 5px solid #17a2b8;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #6a11cb;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding: 15px;
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 600px) {
+            .options, .call-options {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Фишинг-тренажер</h1>
+            <p class="description">Научитесь распознавать опасные сообщения и звонки в электронной почте, SMS и социальных сетях</p>
+        </header>
+        
+        <div class="game-area">
+            <div class="message-card">
+                <div class="message-header">
+                    <span id="message-type">Электронная почта</span>
+                    <span id="message-number">Сообщение 1 из 15</span>
+                </div>
+                <div class="message-content" id="message-text">
+                    Загрузка сообщения...
+                </div>
+            </div>
+            
+            <div class="options" id="standard-options">
+                <button class="btn-safe" id="safe-btn">Безопасное</button>
+                <button class="btn-phishing" id="phishing-btn">Фишинг</button>
+            </div>
+            
+            <div class="call-options" id="call-options" style="display: none;">
+                <button class="btn-continue" id="continue-btn">Продолжить разговор</button>
+                <button class="btn-hangup" id="hangup-btn">Повесить трубку</button>
+            </div>
+            
+            <div class="result" id="result">
+                <!-- Результат будет добавлен сюда -->
+            </div>
+            
+            <button class="btn-next" id="next-btn">Следующее сообщение</button>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-item">
+                <div class="stat-value" id="correct-count">0</div>
+                <div>Правильно</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="total-count">0</div>
+                <div>Всего</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value" id="accuracy">0%</div>
+                <div>Точность</div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Тренажер для обучения кибербезопасности. Помните: будьте внимательны к подозрительным сообщениям и звонкам!</p>
+        </footer>
+    </div>
+
+    <script>
+        // База данных сообщений (увеличена до 15 сообщений)
+        const messages = [
+            {
+                type: "Электронная почта",
+                content: `От: service@yourbank.com
+Тема: Срочно! Ваша учетная запись заблокирована
+
+Уважаемый клиент,
+
+Мы обнаружили подозрительную активность в вашей учетной записи. Для защиты ваших средств ваша учетная запись временно заблокирована.
+
+Чтобы разблокировать учетную запись, перейдите по ссылке ниже и подтвердите свои данные:
+
+http://yourbank-secure-login.com/verify
+
+Если вы не выполните эти действия в течение 24 часов, ваша учетная запись будет заблокирована навсегда.
+
+С уважением,
+Служба безопасности ВашБанк`,
+                isPhishing: true,
+                consequences: "Переход по ссылке приведет на поддельный сайт, где мошенники получат доступ к вашим банковским данным. Это может привести к краже денег с вашего счета.",
+                tips: "Обратите внимание на подозрительный домен в ссылке (yourbank-secure-login.com вместо официального домена банка). Настоящие банки обычно не блокируют аккаунты через email без предварительного уведомления другими способами."
+            },
+            {
+                type: "SMS",
+                content: `От кого: Почта России
+
+Ваша посылка ожидает оплаты доставки. Для получения перейдите по ссылке: https://russian-post-pay.ru/package12345`,
+                isPhishing: true,
+                consequences: "Переход по ссылке может привести к загрузке вредоносного ПО на ваше устройство или к запросу платежных данных, которые будут украдены.",
+                tips: "Почта России обычно отправляет уведомления через официальное приложение или с определенных номеров. Подозрительные домены и срочные требования оплаты - явные признаки фишинга."
+            },
+            {
+                type: "Сообщение в соцсети",
+                content: `Привет! Это Мария из отдела маркетинга Вконтакте. Ваш аккаунт был выбран для участия в программе проверки новых функций. Для получения доступа необходимо подтвердить ваши учетные данные по ссылке: http://vk-verification-center.com`,
+                isPhishing: true,
+                consequences: "Мошенники получат доступ к вашей учетной записи в социальной сети, что может привести к краже личных данных, рассылке спама от вашего имени или шантажу.",
+                tips: "Официальные представители соцсетей никогда не запрашивают пароли через личные сообщения. Все официальные уведомления приходят через внутреннюю систему уведомлений платформы."
+            },
+            {
+                type: "Электронная почта",
+                content: `От: security@netflix.com
+Тема: Подтверждение обновления платежной информации
+
+Уважаемый подписчик,
+
+Мы успешно обновили вашу платежную информацию в соответствии с вашим запросом.
+
+Если вы не запрашивали это изменение, пожалуйста, немедленно свяжитесь с нашей службой поддержки через приложение Netflix или на странице https://help.netflix.com.
+
+С уважением,
+Команда Netflix`,
+                isPhishing: false,
+                consequences: "",
+                tips: "Это пример настоящего уведомительного письма. Оно информирует о действии, но не требует немедленных действий и предоставляет официальный способ связи через приложение или проверенный сайт."
+            },
+            {
+                type: "SMS",
+                content: `От кого: Яндекс.Такси
+
+Ваш заказ №1067 принят. Водитель Михаил на Kia Rio (A123BC) подъедет через 5 мин.`,
+                isPhishing: false,
+                consequences: "",
+                tips: "Это пример настоящего служебного SMS. Оно содержит конкретную информацию о заказе и не требует перехода по ссылкам или предоставления личных данных."
+            },
+            {
+                type: "Электронная почта",
+                content: `От: support@microsoft-security.com
+Тема: Требуется срочное обновление безопасности
+
+Уважаемый пользователь,
+
+Наша система обнаружила, что на вашем устройстве отсутствуют важные обновления безопасности. Это подвергает риску ваши личные данные.
+
+Для установки необходимых обновлений перейдите по ссылке ниже и следуйте инструкциям:
+
+http://microsoft-security-update.com/download
+
+Просим не откладывать обновление системы!
+
+С уважением,
+Команда безопасности Microsoft`,
+                isPhishing: true,
+                consequences: "Переход по ссылке приведет к загрузке вредоносного программного обеспечения, которое может украсть ваши данные или заблокировать доступ к компьютеру с требованием выкупа.",
+                tips: "Microsoft никогда не отправляет письма с ссылками пользователям для скачивания обновлений. Все обновления устанавливаются через официальный Центр обновления Windows."
+            },
+            {
+                type: "SMS",
+                content: `От кого: СБЕРБАНК
+
+Зафиксирована попытка входа в ваш аккаунт с нового устройства. Если это были не Вы, перейдите по ссылке для блокировки: sber-security.ru/block`,
+                isPhishing: true,
+                consequences: "Мошенники получат доступ к вашей банковской учетной записи, что может привести к несанкционированным переводам и потере средств.",
+                tips: "Официальные SMS от Сбербанка всегда приходят с короткого номера 900 и содержат инструкции по звонку на горячую линию, а не переходу по ссылкам."
+            },
+            {
+                type: "Сообщение в мессенджере",
+                content: `Привет! Это твой друг Алексей. Я потерял телефон и не могу войти в свой аккаунт. Можешь прислать мне код подтверждения, который тебе сейчас придет? Очень срочно!`,
+                isPhishing: true,
+                consequences: "Мошенник получит доступ к аккаунту вашего друга и сможет рассылать подобные сообщения другим контактам, распространяя атаку дальше.",
+                tips: "Никогда не передавайте коды подтверждения другим людям, даже если они представляются вашими друзьями. Это стандартная схема взлома аккаунтов."
+            },
+            {
+                type: "Электронная почта",
+                content: `От: no-reply@google.com
+Тема: Уведомление о безопасности аккаунта
+
+Здравствуйте,
+
+Мы зафиксировали вход в ваш аккаунт Google с нового устройства в Москва, Россия.
+
+Устройство: Samsung Galaxy S21
+Время: 15:34, 15 ноября 2023
+
+Если это были вы, можете проигнорировать это сообщение. Если нет, перейдите в настройки безопасности вашего аккаунта и проверьте активность: https://myaccount.google.com/security
+
+С уважением,
+Команда безопасности Google`,
+                isPhishing: false,
+                consequences: "",
+                tips: "Это пример настоящего уведомления о безопасности. Оно информирует о событии, но не требует немедленных действий и предоставляет ссылку на официальный домен Google."
+            },
+            {
+                type: "SMS",
+                content: `От кого: Тинькофф Банк
+
+По вашей карте *1234 совершена операция на 5 670 руб. в Pyaterochka. Если это не Вы, срочно позвоните по номеру 8-800-200-00-00 или напишите в службу поддержки банка для блокировки карты.`,
+                isPhishing: false,
+                consequences: "",
+                tips: "Это пример настоящего SMS от банка. Оно содержит информацию о транзакции и предоставляет официальный номер телефона для связи, а не ссылку для перехода."
+            },
+            // Новые примеры с телефонными звонками
+            {
+                type: "Телефонный звонок",
+                content: `Звонок от: "Федеральная налоговая служба"
+
+"Добрый день! Говорит инспектор Иванов из Федеральной налоговой службы. У нас есть информация о недоплате налогов за последний квартал. Для избежания штрафа необходимо срочно оплатить задолженность. Я могу принять оплату банковской картой прямо сейчас."`,
+                isPhishing: true,
+                isCall: true,
+                consequences: "Сообщив данные карты, вы потеряете контроль над своими средствами. Мошенники смогут снимать деньги без вашего согласия, при этом настоящие налоговые обязательства останутся невыполненными.",
+                tips: "ФНС никогда не звонит с требованием срочной оплаты по телефону. Все уведомления приходят официальными письмами с детальной расшифровкой задолженности."
+            },
+            {
+                type: "Телефонный звонок",
+                content: `Звонок от: "Пенсионный фонд России"
+
+"Здравствуйте! Это Пенсионный фонд России. Мы проводим перерасчет пенсионных накоплений. Для получения повышенных выплат нам нужно подтвердить ваши персональные данные и номер СНИЛС."`,
+                isPhishing: true,
+                isCall: true,
+                consequences: "Предоставление персональных данных и номера СНИЛС может привести к мошенническим операциям с вашими пенсионными накоплениями и краже личных данных.",
+                tips: "Пенсионный фонд не запрашивает конфиденциальные данные по телефону. Все операции проводятся через личный кабинет на официальном сайте или в отделениях ПФР."
+            },
+            {
+                type: "Телефонный звонок",
+                content: `Звонок от: "МВД России"
+
+"Говорит майор Петров из Главного управления МВД. На ваше имя зарегистрировано подозрительное транспортное средство, замеченное в совершении ДТП. Для снятия подозрений необходимо предоставить паспортные данные и подтвердить место вашего нахождения."`,
+                isPhishing: true,
+                isCall: true,
+                consequences: "Предоставление паспортных данных сотрудникам МВД по телефону может привести к краже личности и использованию ваших данных в мошеннических схемах.",
+                tips: "Сотрудники МВД никогда не запрашивают паспортные данные по телефону. При реальных подозрениях вас пригласят в отделение для дачи объяснений."
+            },
+            {
+                type: "Телефонный звонок",
+                content: `Звонок от: "Ваш банк"
+
+"Добрый день! Это автоматическая информационная служба вашего банка. Напоминаем, что 25 декабря будет списана ежегодная плата за обслуживание карты в размере 500 рублей. Подробности в мобильном приложении банка."`,
+                isPhishing: false,
+                isCall: true,
+                consequences: "",
+                tips: "Это пример автоматического уведомления. Оно информирует о стандартной операции и не требует никаких действий от вас, кроме проверки информации в официальном приложении."
+            },
+            {
+                type: "Телефонный звонок",
+                content: `Звонок от: "Ростелеком"
+
+"Здравствуйте! Это служба поддержки Ростелеком. Мы проводим плановые технические работы в вашем районе 15 ноября с 02:00 до 06:00. Связь может быть временно недоступна. Приносим извинения за возможные неудобства."`,
+                isPhishing: false,
+                isCall: true,
+                consequences: "",
+                tips: "Это пример настоящего информационного звонка от провайдера. Он предупреждает о плановых работах и не требует никаких действий или предоставления данных."
+            }
+        ];
+
+        // Переменные состояния
+        let currentMessageIndex = 0;
+        let correctAnswers = 0;
+        let totalAnswers = 0;
+
+        // Элементы DOM
+        const messageTypeElement = document.getElementById('message-type');
+        const messageNumberElement = document.getElementById('message-number');
+        const messageTextElement = document.getElementById('message-text');
+        const safeButton = document.getElementById('safe-btn');
+        const phishingButton = document.getElementById('phishing-btn');
+        const hangupButton = document.getElementById('hangup-btn');
+        const continueButton = document.getElementById('continue-btn');
+        const resultElement = document.getElementById('result');
+        const nextButton = document.getElementById('next-btn');
+        const correctCountElement = document.getElementById('correct-count');
+        const totalCountElement = document.getElementById('total-count');
+        const accuracyElement = document.getElementById('accuracy');
+        const standardOptions = document.getElementById('standard-options');
+        const callOptions = document.getElementById('call-options');
+
+        // Функция для отображения текущего сообщения
+        function displayMessage() {
+            const message = messages[currentMessageIndex];
+            messageTypeElement.textContent = message.type;
+            messageNumberElement.textContent = `Сообщение ${currentMessageIndex + 1} из ${messages.length}`;
+            messageTextElement.textContent = message.content;
+            
+            // Показываем соответствующие кнопки в зависимости от типа сообщения
+            if (message.isCall) {
+                standardOptions.style.display = 'none';
+                callOptions.style.display = 'flex';
+            } else {
+                standardOptions.style.display = 'flex';
+                callOptions.style.display = 'none';
+            }
+            
+            // Сброс состояния
+            resultElement.style.display = 'none';
+            nextButton.style.display = 'none';
+            safeButton.disabled = false;
+            phishingButton.disabled = false;
+            hangupButton.disabled = false;
+            continueButton.disabled = false;
+        }
+
+        // Функция для обработки ответа пользователя
+        function handleAnswer(userChoice) {
+            const message = messages[currentMessageIndex];
+            let isCorrect = false;
+            
+            // Определяем правильность ответа в зависимости от типа сообщения
+            if (message.isCall) {
+                // Для звонков: "Продолжить разговор" = безопасно, "Повесить трубку" = фишинг
+                isCorrect = (userChoice === 'continue') !== message.isPhishing;
+            } else {
+                // Для остальных сообщений: стандартная логика
+                isCorrect = (userChoice === 'phishing') === message.isPhishing;
+            }
+            
+            // Обновление статистики
+            totalAnswers++;
+            if (isCorrect) {
+                correctAnswers++;
+            }
+            
+            // Обновление отображения статистики
+            correctCountElement.textContent = correctAnswers;
+            totalCountElement.textContent = totalAnswers;
+            accuracyElement.textContent = totalAnswers > 0 ? Math.round((correctAnswers / totalAnswers) * 100) + '%' : '0%';
+            
+            // Показ результата
+            resultElement.innerHTML = '';
+            resultElement.className = 'result ' + (isCorrect ? 'correct' : 'incorrect');
+            
+            if (isCorrect) {
+                resultElement.innerHTML = '<h3>Правильно!</h3>';
+            } else {
+                resultElement.innerHTML = '<h3>Неправильно!</h3>';
+            }
+            
+            if (message.isPhishing) {
+                resultElement.innerHTML += `
+                    <p>Это сообщение было <strong>фишинговым</strong>.</p>
+                    <div class="consequences">
+                        <h4>Последствия:</h4>
+                        <p>${message.consequences}</p>
+                    </div>
+                `;
+            } else {
+                resultElement.innerHTML += `
+                    <p>Это сообщение было <strong>безопасным</strong>.</p>
+                `;
+            }
+            
+            resultElement.innerHTML += `
+                <div class="tips">
+                    <h4>Советы по безопасности:</h4>
+                    <p>${message.tips}</p>
+                </div>
+            `;
+            
+            resultElement.style.display = 'block';
+            nextButton.style.display = 'block';
+            
+            // Блокировка кнопок выбора
+            safeButton.disabled = true;
+            phishingButton.disabled = true;
+            hangupButton.disabled = true;
+            continueButton.disabled = true;
+        }
+
+        // Функция для перехода к следующему сообщению
+        function nextMessage() {
+            currentMessageIndex = (currentMessageIndex + 1) % messages.length;
+            displayMessage();
+        }
+
+        // Назначение обработчиков событий
+        safeButton.addEventListener('click', () => handleAnswer('safe'));
+        phishingButton.addEventListener('click', () => handleAnswer('phishing'));
+        hangupButton.addEventListener('click', () => handleAnswer('hangup'));
+        continueButton.addEventListener('click', () => handleAnswer('continue'));
+        nextButton.addEventListener('click', nextMessage);
+
+        // Инициализация приложения
+        displayMessage();
+    </script>
+</body>
+</html>
